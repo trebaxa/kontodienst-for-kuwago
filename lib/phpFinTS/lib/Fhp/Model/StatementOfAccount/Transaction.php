@@ -1,4 +1,5 @@
-<?php /** @noinspection PhpUnused */
+<?php
+/** @noinspection PhpUnused */
 
 namespace Fhp\Model\StatementOfAccount;
 
@@ -26,6 +27,11 @@ class Transaction
      * @var string
      */
     protected $creditDebit;
+
+    /**
+     * @var bool
+     */
+    protected $isStorno;
 
     /**
      * @var string
@@ -182,6 +188,26 @@ class Transaction
     public function setCreditDebit(string $creditDebit)
     {
         $this->creditDebit = $creditDebit;
+
+        return $this;
+    }
+
+    /**
+     * Get isStorno
+     */
+    public function isStorno(): bool
+    {
+        return $this->isStorno;
+    }
+
+    /**
+     * Set isStorno
+     *
+     * @return $this
+     */
+    public function setIsStorno(bool $isStorno)
+    {
+        $this->isStorno = $isStorno;
 
         return $this;
     }

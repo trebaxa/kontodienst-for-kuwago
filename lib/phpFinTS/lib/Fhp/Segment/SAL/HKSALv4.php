@@ -1,4 +1,5 @@
-<?php /** @noinspection PhpUnused */
+<?php
+/** @noinspection PhpUnused */
 
 namespace Fhp\Segment\SAL;
 
@@ -20,7 +21,7 @@ class HKSALv4 extends BaseSegment implements Paginateable
     public $alleKonten;
     /** @var string|null */
     public $kontowaehrung;
-    /** @var int|null Only allowed if HISALS $eingabeAnzahlEintraegeErlaubt says so. */
+    /** @var int|null */
     public $maximaleAnzahlEintraege;
     /** @var string|null Max length: 35 */
     public $aufsetzpunkt;

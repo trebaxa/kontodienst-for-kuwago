@@ -1,4 +1,5 @@
-<?php /** @noinspection PhpUnused */
+<?php
+/** @noinspection PhpUnused */
 
 namespace Fhp\Segment\KAZ;
 
@@ -16,13 +17,13 @@ class HKKAZv5 extends BaseSegment implements Paginateable
 {
     /** @var \Fhp\Segment\Common\KtvV3 */
     public $kontoverbindungAuftraggeber;
-    /** @var bool Only allowed if HIKAZS $alleKontenErlaubt says so. */
+    /** @var bool Only allowed if {@link ParameterKontoumsaetzeV2::$alleKontenErlaubt} says so. */
     public $alleKonten;
     /** @var string|null JJJJMMTT gemäß ISO 8601 */
     public $vonDatum;
     /** @var string|null JJJJMMTT gemäß ISO 8601 */
     public $bisDatum;
-    /** @var int|null Only allowed if HIKAZS $eingabeAnzahlEintraegeErlaubt says so. */
+    /** @var int|null Only allowed if {@link ParameterKontoumsaetzeV2::$eingabeAnzahlEintraegeErlaubt} says so. */
     public $maximaleAnzahlEintraege;
     /** @var string|null Max length: 35 */
     public $aufsetzpunkt;

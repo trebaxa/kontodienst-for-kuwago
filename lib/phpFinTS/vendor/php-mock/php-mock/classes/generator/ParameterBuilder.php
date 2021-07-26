@@ -2,6 +2,8 @@
 
 namespace phpmock\generator;
 
+use ReflectionFunction;
+
 /**
  * Builder for the mocked function parameters.
  *
@@ -33,7 +35,7 @@ class ParameterBuilder
         if (!function_exists($functionName)) {
             return;
         }
-        $function            = new \ReflectionFunction($functionName);
+        $function            = new ReflectionFunction($functionName);
         $signatureParameters = [];
         $bodyParameters      = [];
         foreach ($function->getParameters() as $reflectionParameter) {
@@ -43,7 +45,7 @@ class ParameterBuilder
             $parameter = $reflectionParameter->isPassedByReference()
                 ? "&$$reflectionParameter->name"
                 : "$$reflectionParameter->name";
-            
+
             $signatureParameter = $reflectionParameter->isOptional()
                 ? sprintf("%s = '%s'", $parameter, MockFunctionGenerator::DEFAULT_ARGUMENT)
                 : $parameter;
@@ -54,7 +56,7 @@ class ParameterBuilder
         $this->signatureParameters = implode(", ", $signatureParameters);
         $this->bodyParameters      = implode(", ", $bodyParameters);
     }
-    
+
     /**
      * Returns whether a parameter is variadic.
      *
@@ -73,7 +75,7 @@ class ParameterBuilder
         }
         return false;
     }
-    
+
     /**
      * Returns the signature's parameters.
      *
@@ -83,7 +85,7 @@ class ParameterBuilder
     {
         return $this->signatureParameters;
     }
-    
+
     /**
      * Returns the body's parameter access list.
      *

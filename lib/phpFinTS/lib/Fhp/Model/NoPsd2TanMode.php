@@ -2,6 +2,8 @@
 
 namespace Fhp\Model;
 
+use Fhp\Segment\TAN\HKTAN;
+
 /**
  * This is a placeholder used instead of a real {@link TanMode} in order to signal that the bank's HBCI interface
  * supports no strong authentication whatsoever and thus also no TAN modes. While it should still support the
@@ -24,6 +26,17 @@ final class NoPsd2TanMode implements TanMode
     public function getName(): string
     {
         return 'No PSD2/TANs supported';
+    }
+
+    public function isProzessvariante2(): bool
+    {
+        return false;
+    }
+
+    /** {@inheritdoc} */
+    public function isDecoupled(): bool
+    {
+        return false;
     }
 
     /** {@inheritdoc} */
@@ -78,5 +91,40 @@ final class NoPsd2TanMode implements TanMode
     public function getAntwortHhdUcErforderlich(): bool
     {
         return false;
+    }
+
+    /** {@inheritdoc} */
+    public function getMaxDecoupledChecks(): int
+    {
+        throw new \RuntimeException('Only allowed for decoupled TAN modes');
+    }
+
+    /** {@inheritdoc} */
+    public function getFirstDecoupledCheckDelaySeconds(): int
+    {
+        throw new \RuntimeException('Only allowed for decoupled TAN modes');
+    }
+
+    /** {@inheritdoc} */
+    public function getPeriodicDecoupledCheckDelaySeconds(): int
+    {
+        throw new \RuntimeException('Only allowed for decoupled TAN modes');
+    }
+
+    /** {@inheritdoc} */
+    public function allowsManualConfirmation(): bool
+    {
+        throw new \RuntimeException('Only allowed for decoupled TAN modes');
+    }
+
+    /** {@inheritdoc} */
+    public function allowsAutomatedPolling(): bool
+    {
+        throw new \RuntimeException('Only allowed for decoupled TAN modes');
+    }
+
+    public function createHKTAN(): HKTAN
+    {
+        throw new \AssertionError('HKTAN should not be needed when the bank does not support PSD2');
     }
 }

@@ -1,4 +1,5 @@
-<?php /** @noinspection PhpUnused */
+<?php
+/** @noinspection PhpUnused */
 
 namespace Fhp\Segment\TAN;
 
@@ -7,11 +8,9 @@ use Fhp\Segment\BaseDeg;
 
 class VerfahrensparameterZweiSchrittVerfahrenV6 extends BaseDeg implements TanMode
 {
-    const PROZESSVARIANTE_2 = 2;
-
     /** @var int Allowed values: 900 through 997 */
     public $sicherheitsfunktion;
-    /** @var int Allowed values: 1, 2; See specification or {@link HKTANv6::$$tanProzess} for details. */
+    /** @var string Allowed values: 1, 2; See specification or {@link HKTANv6::$$tanProzess} for details. */
     public $tanProzess;
     /** @var string */
     public $technischeIdentifikationTanVerfahren;
@@ -73,6 +72,18 @@ class VerfahrensparameterZweiSchrittVerfahrenV6 extends BaseDeg implements TanMo
     }
 
     /** {@inheritdoc} */
+    public function isProzessvariante2(): bool
+    {
+        return $this->tanProzess === HKTAN::TAN_PROZESS_2;
+    }
+
+    /** {@inheritdoc} */
+    public function isDecoupled(): bool
+    {
+        return false;
+    }
+
+    /** {@inheritdoc} */
     public function getSmsAbbuchungskontoErforderlich(): bool
     {
         return $this->smsAbbuchungskontoErforderlich === 2;
@@ -124,5 +135,41 @@ class VerfahrensparameterZweiSchrittVerfahrenV6 extends BaseDeg implements TanMo
     public function needsTanMedium(): bool
     {
         return $this->bezeichnungDesTanMediumsErforderlich === 2 && $this->anzahlUnterstuetzterAktiverTanMedien > 0;
+    }
+
+    /** {@inheritdoc} */
+    public function getMaxDecoupledChecks(): int
+    {
+        throw new \RuntimeException('Only allowed for decoupled TAN modes');
+    }
+
+    /** {@inheritdoc} */
+    public function getFirstDecoupledCheckDelaySeconds(): int
+    {
+        throw new \RuntimeException('Only allowed for decoupled TAN modes');
+    }
+
+    /** {@inheritdoc} */
+    public function getPeriodicDecoupledCheckDelaySeconds(): int
+    {
+        throw new \RuntimeException('Only allowed for decoupled TAN modes');
+    }
+
+    /** {@inheritdoc} */
+    public function allowsManualConfirmation(): bool
+    {
+        throw new \RuntimeException('Only allowed for decoupled TAN modes');
+    }
+
+    /** {@inheritdoc} */
+    public function allowsAutomatedPolling(): bool
+    {
+        throw new \RuntimeException('Only allowed for decoupled TAN modes');
+    }
+
+    /** {@inheritdoc} */
+    public function createHKTAN(): HKTAN
+    {
+        return HKTANv6::createEmpty();
     }
 }

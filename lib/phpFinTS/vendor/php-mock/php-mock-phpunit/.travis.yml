@@ -1,13 +1,13 @@
 language: php
 
-sudo: false
-
 cache:
   directories:
     - $HOME/.composer/cache
 
 env:
   - PHPUNIT_VERSION=dev-master
+  - PHPUNIT_VERSION=~9.0.0
+  - PHPUNIT_VERSION=~8.5.0
   - PHPUNIT_VERSION=~8.4.0
   - PHPUNIT_VERSION=~8.3.0
   - PHPUNIT_VERSION=~8.2.0
@@ -27,7 +27,7 @@ env:
   - PHPUNIT_VERSION=~6.0.0
 
 php:
-  - 7.4snapshot
+  - 7.4
   - 7.3
   - 7.2
   - 7.1
@@ -36,8 +36,43 @@ php:
 matrix:
   fast_finish: true
   exclude:
+    - php: 7.4
+      env: PHPUNIT_VERSION=~8.1.0
+    - php: 7.4
+      env: PHPUNIT_VERSION=~8.0.0
+    - php: 7.4
+      env: PHPUNIT_VERSION=~7.4.0
+    - php: 7.4
+      env: PHPUNIT_VERSION=~7.3.0
+    - php: 7.4
+      env: PHPUNIT_VERSION=~7.2.0
+    - php: 7.4
+      env: PHPUNIT_VERSION=~7.1.0
+    - php: 7.4
+      env: PHPUNIT_VERSION=~7.0.0
+    - php: 7.4
+      env: PHPUNIT_VERSION=~6.5.0
+    - php: 7.4
+      env: PHPUNIT_VERSION=~6.4.0
+    - php: 7.4
+      env: PHPUNIT_VERSION=~6.3.0
+    - php: 7.4
+      env: PHPUNIT_VERSION=~6.2.0
+    - php: 7.4
+      env: PHPUNIT_VERSION=~6.1.0
+    - php: 7.4
+      env: PHPUNIT_VERSION=~6.0.0
+
+    - php: 7.2
+      env: PHPUNIT_VERSION=dev-master
+    - php: 7.2
+      env: PHPUNIT_VERSION=~9.0.0
     - php: 7.1
       env: PHPUNIT_VERSION=dev-master
+    - php: 7.1
+      env: PHPUNIT_VERSION=~9.0.0
+    - php: 7.1
+      env: PHPUNIT_VERSION=~8.5.0
     - php: 7.1
       env: PHPUNIT_VERSION=~8.4.0
     - php: 7.1
@@ -48,8 +83,13 @@ matrix:
       env: PHPUNIT_VERSION=~8.1.0
     - php: 7.1
       env: PHPUNIT_VERSION=~8.0.0
+
     - php: 7
       env: PHPUNIT_VERSION=dev-master
+    - php: 7
+      env: PHPUNIT_VERSION=~9.0.0
+    - php: 7
+      env: PHPUNIT_VERSION=~8.5.0
     - php: 7
       env: PHPUNIT_VERSION=~8.4.0
     - php: 7
@@ -73,7 +113,6 @@ matrix:
     - php: 7
       env: PHPUNIT_VERSION=~7.0.0
   allow_failures:
-    - php: 7.4snapshot
     - env: PHPUNIT_VERSION=dev-master
 
 install:

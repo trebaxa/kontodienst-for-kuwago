@@ -30,11 +30,14 @@ Rule sets
 
 The rule is part of the following rule sets:
 
-@PSR2
-  Using the ``@PSR2`` rule set will enable the ``switch_case_space`` rule.
+@PSR12
+  Using the `@PSR12 <./../../ruleSets/PSR12.rst>`_ rule set will enable the ``switch_case_space`` rule.
 
-@Symfony
-  Using the ``@Symfony`` rule set will enable the ``switch_case_space`` rule.
+@PSR2
+  Using the `@PSR2 <./../../ruleSets/PSR2.rst>`_ rule set will enable the ``switch_case_space`` rule.
 
 @PhpCsFixer
-  Using the ``@PhpCsFixer`` rule set will enable the ``switch_case_space`` rule.
+  Using the `@PhpCsFixer <./../../ruleSets/PhpCsFixer.rst>`_ rule set will enable the ``switch_case_space`` rule.
+
+@Symfony
+  Using the `@Symfony <./../../ruleSets/Symfony.rst>`_ rule set will enable the ``switch_case_space`` rule.

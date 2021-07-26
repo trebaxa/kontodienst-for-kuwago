@@ -34,8 +34,8 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 final class Application extends BaseApplication
 {
-    const VERSION = '2.16.7';
-    const VERSION_CODENAME = 'Yellow Bird';
+    const VERSION = '2.18.2';
+    const VERSION_CODENAME = 'Remote Void';
 
     /**
      * @var ToolInfo

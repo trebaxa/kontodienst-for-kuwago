@@ -29,9 +29,10 @@ $arr = json_decode($json,true);
                 <select name="FORM[server]" class="form-control">
                 <?PHP
                 if (is_array($arr)){
+                   # kd_install::<ins>echoarr</ins>($arr);
                     foreach ($arr['servers'] as $row) {
                         $sel = ($_SESSION['set']['server']==$row['fin_pintanurl']) ? 'selected' : '' ;
-                        echo '<option '.$sel.' value="'.$row['fin_pintanurl'].'">'.$row['fin_name'].' '.$row['fin_location'].'</option>';
+                        echo '<option '.$sel.' value="'.$row['fin_pintanurl'].'">'.$row['fin_name'].' ['.$row['fin_location'].']</option>';
                     }
                 }
                 ?>

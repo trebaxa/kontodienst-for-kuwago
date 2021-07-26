@@ -24,7 +24,7 @@ if (!is_numeric($tanModeIndex) || !array_key_exists(intval($tanModeIndex), $tanM
     die();
 }
 $tanMode = $tanModes[intval($tanModeIndex)];
-echo 'You selected ' . $tanMode->getName() . "\n";
+echo 'You selected <b>' . $tanMode->getName() . "</b>\n";
 
 // In case the selected TAN mode requires a TAN medium (e.g. if the user picked mTAN, they may have to pick the mobile
 // device on which they want to receive TANs), let the user pick that too.

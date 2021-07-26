@@ -307,12 +307,16 @@ class kd_install extends kd_master {
      * @return void
      */
     function cmd_select_tanmedia() {
-        $_SESSION['TANMODE'] = array_merge($_SESSION['TANMODE'], (array )$_POST['FORM']);
+        if (!isset($_SESSION['TANMODE']) || !is_array($_SESSION['TANMODE'])) {
+            header('location: install.php');
+            exit();
+        }
+        $_SESSION['TANMODE'] = array_merge($_SESSION['TANMODE'], (array )$_POST['FORM']);       
         #   self::echoarr($_SESSION['TANMODE'] );die;
         $hash_secret = self::gen_hash();
         $arr = array('api' => array(
                 'tanmode' => $_SESSION['TANMODE']['tanmode'],
-                'tanmedia' => $_SESSION['TANMODE']['tanmedia'],
+                'tanmedia' => (isset($_SESSION['TANMODE']['tanmedia']) ? $_SESSION['TANMODE']['tanmedia'] : ""),
                 'hash_secret' => $hash_secret,
                 'host' => self::get_domain_name(),
                 'key' => hash('sha256', self::get_domain_name(), false),
@@ -324,6 +328,7 @@ class kd_install extends kd_master {
         file_put_contents(CONFIG_PATH . 'fints.hash', $hash_secret);
         file_put_contents(CONFIG_PATH . 'fints_config.json', self::simple_crypt(json_encode($arr), 'e', $hash_secret));
         self::set_tpl_arr('arr', $arr);
+
         self::set_tpl('install.fine');
         self::msg('Konfiguration gespeichert');
     }

@@ -1,8 +1,8 @@
-<?php /** @noinspection PhpUnused */
+<?php
+/** @noinspection PhpUnused */
 
 namespace Fhp\Segment\TAN;
 
-use Fhp\Model\TanRequest;
 use Fhp\Segment\BaseSegment;
 use Fhp\Syntax\Bin;
 
@@ -12,12 +12,11 @@ use Fhp\Syntax\Bin;
  * @link: https://www.hbci-zka.de/dokumente/spezifikation_deutsch/fintsv3/FinTS_3.0_Security_Sicherheitsverfahren_PINTAN_2018-02-23_final_version.pdf
  * Section: B.5.1 b)
  */
-class HITANv6 extends BaseSegment implements TanRequest
+class HITANv6 extends BaseSegment implements HITAN
 {
-    const DUMMY_REFERENCE = 'noref';
-
     /**
-     * @var int Allowed values: 1 (for Prozessvariante 1), 2, 3, 4. See {@link HKTANv6::$$tanProzess} for details.
+     * @var string Allowed values: 1 (for Prozessvariante 1), 2, 3, 4. See {@link HKTANv6::$tanProzess} for details.
+     *     NOTE: This field is re-used in HITANv7, where the value 'S' is also allowed.
      */
     public $tanProzess;
     /**
@@ -29,7 +28,7 @@ class HITANv6 extends BaseSegment implements TanRequest
     public $auftragsHashwert;
     /**
      * Special value "noref" means that no TAN is needed.
-     * M: bei TAN-Prozess=2, 3, 4
+     * M: bei TAN-Prozess=2, 3, 4 (and S)
      * O: TAN-Prozess=1
      * @var string|null Max length: 35
      */
@@ -41,7 +40,7 @@ class HITANv6 extends BaseSegment implements TanRequest
      * presenting the challenge to the user.
      *
      * M: bei TAN-Prozess=1, 3, 4
-     * O: bei TAN-Prozess=2
+     * O: bei TAN-Prozess=2 (and S)
      * @var string|null Max length: 2048
      */
     public $challenge;
@@ -67,10 +66,10 @@ class HITANv6 extends BaseSegment implements TanRequest
     }
 
     /** {@inheritdoc} */
-    public function getChallenge(): string
+    public function getChallenge(): ?string
     {
         // Note: This is non-null because tanProzess==4.
-        return $this->challenge;
+        return $this->challenge === static::DUMMY_CHALLENGE ? null : $this->challenge;
     }
 
     /** {@inheritdoc} */
@@ -79,7 +78,7 @@ class HITANv6 extends BaseSegment implements TanRequest
         return $this->bezeichnungDesTanMediums;
     }
 
-    public function getTanProzess(): int
+    public function getTanProzess(): string
     {
         return $this->tanProzess;
     }
