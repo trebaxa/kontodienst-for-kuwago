@@ -2,6 +2,7 @@
 <html class="no-js" lang="de" prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# mynamespace: http://ogp.me/ns/fb/mynamespace#">
 <head itemscope itemtype="http://schema.org/WebSite" >
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 </head>
 
 <main>
