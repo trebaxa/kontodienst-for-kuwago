@@ -10,6 +10,7 @@ use Fhp\Syntax\Bin;
  */
 interface HIKAZ extends SegmentInterface
 {
-    /** @return Bin */
     public function getGebuchteUmsaetze(): Bin;
+
+    public function getNichtGebuchteUmsaetze(): ?Bin;
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of PHP CS Fixer.
  *
@@ -16,49 +18,77 @@ use PhpCsFixer\AbstractFixer;
 use PhpCsFixer\DocBlock\Annotation;
 use PhpCsFixer\DocBlock\DocBlock;
 use PhpCsFixer\DocBlock\TagComparator;
+use PhpCsFixer\Fixer\ConfigurableFixerInterface;
+use PhpCsFixer\FixerConfiguration\FixerConfigurationResolver;
+use PhpCsFixer\FixerConfiguration\FixerConfigurationResolverInterface;
+use PhpCsFixer\FixerConfiguration\FixerOptionBuilder;
 use PhpCsFixer\FixerDefinition\CodeSample;
 use PhpCsFixer\FixerDefinition\FixerDefinition;
+use PhpCsFixer\FixerDefinition\FixerDefinitionInterface;
 use PhpCsFixer\Tokenizer\Token;
 use PhpCsFixer\Tokenizer\Tokens;
+use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 
 /**
- * @author Graham Campbell <graham@alt-three.com>
+ * @author Graham Campbell <hello@gjcampbell.co.uk>
+ * @author Jakub Kwaśniewski <jakub@zero-85.pl>
  */
-final class PhpdocSeparationFixer extends AbstractFixer
+final class PhpdocSeparationFixer extends AbstractFixer implements ConfigurableFixerInterface
 {
+    /**
+     * @var string[][]
+     */
+    private array $groups;
+
     /**
      * {@inheritdoc}
      */
-    public function getDefinition()
+    public function getDefinition(): FixerDefinitionInterface
     {
-        return new FixerDefinition(
-            'Annotations in PHPDoc should be grouped together so that annotations of the same type immediately follow each other, and annotations of a different type are separated by a single blank line.',
-            [
-                new CodeSample(
-                    '<?php
+        $code = <<<'EOF'
+<?php
 /**
- * Description.
+ * Hello there!
+ *
+ * @author John Doe
+ * @custom Test!
+ *
+ * @throws Exception|RuntimeException foo
  * @param string $foo
  *
- *
  * @param bool   $bar Bar
- * @throws Exception|RuntimeException
- * @return bool
+ * @return int  Return the number of changes.
  */
-function fnc($foo, $bar) {}
-'
-                ),
-            ]
+
+EOF;
+
+        return new FixerDefinition(
+            'Annotations in PHPDoc should be grouped together so that annotations of the same type immediately follow each other. Annotations of a different type are separated by a single blank line.',
+            [
+                new CodeSample($code),
+                new CodeSample($code, ['groups' => [...TagComparator::DEFAULT_GROUPS, ['param', 'return']]]),
+                new CodeSample($code, ['groups' => [['author', 'throws', 'custom'], ['return', 'param']]]),
+            ],
         );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function configure(array $configuration): void
+    {
+        parent::configure($configuration);
+
+        $this->groups = $this->configuration['groups'];
     }
 
     /**
      * {@inheritdoc}
      *
      * Must run before PhpdocAlignFixer.
-     * Must run after CommentToPhpdocFixer, GeneralPhpdocAnnotationRemoveFixer, PhpdocIndentFixer, PhpdocNoAccessFixer, PhpdocNoEmptyReturnFixer, PhpdocNoPackageFixer, PhpdocOrderFixer, PhpdocScalarFixer, PhpdocToCommentFixer, PhpdocTypesFixer.
+     * Must run after AlignMultilineCommentFixer, CommentToPhpdocFixer, GeneralPhpdocAnnotationRemoveFixer, PhpdocIndentFixer, PhpdocNoAccessFixer, PhpdocNoEmptyReturnFixer, PhpdocNoPackageFixer, PhpdocOrderFixer, PhpdocScalarFixer, PhpdocToCommentFixer, PhpdocTypesFixer.
      */
-    public function getPriority()
+    public function getPriority(): int
     {
         return -3;
     }
@@ -66,7 +96,7 @@ function fnc($foo, $bar) {}
     /**
      * {@inheritdoc}
      */
-    public function isCandidate(Tokens $tokens)
+    public function isCandidate(Tokens $tokens): bool
     {
         return $tokens->isTokenKindFound(T_DOC_COMMENT);
     }
@@ -74,7 +104,7 @@ function fnc($foo, $bar) {}
     /**
      * {@inheritdoc}
      */
-    protected function applyFix(\SplFileInfo $file, Tokens $tokens)
+    protected function applyFix(\SplFileInfo $file, Tokens $tokens): void
     {
         foreach ($tokens as $index => $token) {
             if (!$token->isGivenKind(T_DOC_COMMENT)) {
@@ -90,9 +120,47 @@ function fnc($foo, $bar) {}
     }
 
     /**
+     * {@inheritdoc}
+     */
+    protected function createConfigurationDefinition(): FixerConfigurationResolverInterface
+    {
+        $allowTagToBelongToOnlyOneGroup = function ($groups) {
+            $tags = [];
+            foreach ($groups as $groupIndex => $group) {
+                foreach ($group as $member) {
+                    if (isset($tags[$member])) {
+                        if ($groupIndex === $tags[$member]) {
+                            throw new InvalidOptionsException(
+                                'The option "groups" value is invalid. '.
+                                'The "'.$member.'" tag is specified more than once.'
+                            );
+                        }
+
+                        throw new InvalidOptionsException(
+                            'The option "groups" value is invalid. '.
+                            'The "'.$member.'" tag belongs to more than one group.'
+                        );
+                    }
+                    $tags[$member] = $groupIndex;
+                }
+            }
+
+            return true;
+        };
+
+        return new FixerConfigurationResolver([
+            (new FixerOptionBuilder('groups', 'Sets of annotation types to be grouped together.'))
+                ->setAllowedTypes(['string[][]'])
+                ->setDefault(TagComparator::DEFAULT_GROUPS)
+                ->setAllowedValues([$allowTagToBelongToOnlyOneGroup])
+                ->getOption(),
+        ]);
+    }
+
+    /**
      * Make sure the description is separated from the annotations.
      */
-    private function fixDescription(DocBlock $doc)
+    private function fixDescription(DocBlock $doc): void
     {
         foreach ($doc->getLines() as $index => $line) {
             if ($line->containsATag()) {
@@ -113,10 +181,8 @@ function fnc($foo, $bar) {}
 
     /**
      * Make sure the annotations are correctly separated.
-     *
-     * @return string
      */
-    private function fixAnnotations(DocBlock $doc)
+    private function fixAnnotations(DocBlock $doc): void
     {
         foreach ($doc->getAnnotations() as $index => $annotation) {
             $next = $doc->getAnnotation($index + 1);
@@ -125,22 +191,18 @@ function fnc($foo, $bar) {}
                 break;
             }
 
-            if (true === $next->getTag()->valid()) {
-                if (TagComparator::shouldBeTogether($annotation->getTag(), $next->getTag())) {
-                    $this->ensureAreTogether($doc, $annotation, $next);
-                } else {
-                    $this->ensureAreSeparate($doc, $annotation, $next);
-                }
+            if (TagComparator::shouldBeTogether($annotation->getTag(), $next->getTag(), $this->groups)) {
+                $this->ensureAreTogether($doc, $annotation, $next);
+            } else {
+                $this->ensureAreSeparate($doc, $annotation, $next);
             }
         }
-
-        return $doc->getContent();
     }
 
     /**
      * Force the given annotations to immediately follow each other.
      */
-    private function ensureAreTogether(DocBlock $doc, Annotation $first, Annotation $second)
+    private function ensureAreTogether(DocBlock $doc, Annotation $first, Annotation $second): void
     {
         $pos = $first->getEnd();
         $final = $second->getStart();
@@ -153,7 +215,7 @@ function fnc($foo, $bar) {}
     /**
      * Force the given annotations to have one empty line between each other.
      */
-    private function ensureAreSeparate(DocBlock $doc, Annotation $first, Annotation $second)
+    private function ensureAreSeparate(DocBlock $doc, Annotation $first, Annotation $second): void
     {
         $pos = $first->getEnd();
         $final = $second->getStart() - 1;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of PHP CS Fixer.
  *
@@ -30,44 +32,29 @@ namespace PhpCsFixer\Cache;
  */
 final class FileCacheManager implements CacheManagerInterface
 {
-    /**
-     * @var FileHandlerInterface
-     */
-    private $handler;
+    private FileHandlerInterface $handler;
 
-    /**
-     * @var SignatureInterface
-     */
-    private $signature;
+    private SignatureInterface $signature;
+
+    private bool $isDryRun;
+
+    private DirectoryInterface $cacheDirectory;
 
     /**
      * @var CacheInterface
      */
     private $cache;
 
-    /**
-     * @var bool
-     */
-    private $isDryRun;
-
-    /**
-     * @var DirectoryInterface
-     */
-    private $cacheDirectory;
-
-    /**
-     * @param bool $isDryRun
-     */
     public function __construct(
         FileHandlerInterface $handler,
         SignatureInterface $signature,
-        $isDryRun = false,
-        DirectoryInterface $cacheDirectory = null
+        bool $isDryRun = false,
+        ?DirectoryInterface $cacheDirectory = null
     ) {
         $this->handler = $handler;
         $this->signature = $signature;
         $this->isDryRun = $isDryRun;
-        $this->cacheDirectory = $cacheDirectory ?: new Directory('');
+        $this->cacheDirectory = $cacheDirectory ?? new Directory('');
 
         $this->readCache();
     }
@@ -81,7 +68,7 @@ final class FileCacheManager implements CacheManagerInterface
      * This class is not intended to be serialized,
      * and cannot be deserialized (see __wakeup method).
      */
-    public function __sleep()
+    public function __sleep(): array
     {
         throw new \BadMethodCallException('Cannot serialize '.__CLASS__);
     }
@@ -92,19 +79,19 @@ final class FileCacheManager implements CacheManagerInterface
      *
      * @see https://owasp.org/www-community/vulnerabilities/PHP_Object_Injection
      */
-    public function __wakeup()
+    public function __wakeup(): void
     {
         throw new \BadMethodCallException('Cannot unserialize '.__CLASS__);
     }
 
-    public function needFixing($file, $fileContent)
+    public function needFixing(string $file, string $fileContent): bool
     {
         $file = $this->cacheDirectory->getRelativePathTo($file);
 
         return !$this->cache->has($file) || $this->cache->get($file) !== $this->calcHash($fileContent);
     }
 
-    public function setFile($file, $fileContent)
+    public function setFile(string $file, string $fileContent): void
     {
         $file = $this->cacheDirectory->getRelativePathTo($file);
 
@@ -119,24 +106,24 @@ final class FileCacheManager implements CacheManagerInterface
         $this->cache->set($file, $hash);
     }
 
-    private function readCache()
+    private function readCache(): void
     {
         $cache = $this->handler->read();
 
-        if (!$cache || !$this->signature->equals($cache->getSignature())) {
+        if (null === $cache || !$this->signature->equals($cache->getSignature())) {
             $cache = new Cache($this->signature);
         }
 
         $this->cache = $cache;
     }
 
-    private function writeCache()
+    private function writeCache(): void
     {
         $this->handler->write($this->cache);
     }
 
-    private function calcHash($content)
+    private function calcHash(string $content): string
     {
-        return crc32($content);
+        return md5($content);
     }
 }

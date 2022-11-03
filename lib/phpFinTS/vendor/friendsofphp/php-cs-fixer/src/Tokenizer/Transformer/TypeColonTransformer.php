@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of PHP CS Fixer.
  *
@@ -29,7 +31,7 @@ final class TypeColonTransformer extends AbstractTransformer
     /**
      * {@inheritdoc}
      */
-    public function getPriority()
+    public function getPriority(): int
     {
         // needs to run after ReturnRefTransformer and UseTransformer
         // and before TypeAlternationTransformer
@@ -39,7 +41,7 @@ final class TypeColonTransformer extends AbstractTransformer
     /**
      * {@inheritdoc}
      */
-    public function getRequiredPhpVersionId()
+    public function getRequiredPhpVersionId(): int
     {
         return 70000;
     }
@@ -47,13 +49,22 @@ final class TypeColonTransformer extends AbstractTransformer
     /**
      * {@inheritdoc}
      */
-    public function process(Tokens $tokens, Token $token, $index)
+    public function process(Tokens $tokens, Token $token, int $index): void
     {
         if (!$token->equals(':')) {
             return;
         }
 
         $endIndex = $tokens->getPrevMeaningfulToken($index);
+
+        if (
+            \defined('T_ENUM') // @TODO: drop condition when PHP 8.1+ is required
+            && $tokens[$tokens->getPrevMeaningfulToken($endIndex)]->isGivenKind(T_ENUM)
+        ) {
+            $tokens[$index] = new Token([CT::T_TYPE_COLON, ':']);
+
+            return;
+        }
 
         if (!$tokens[$endIndex]->equals(')')) {
             return;
@@ -69,13 +80,7 @@ final class TypeColonTransformer extends AbstractTransformer
             $prevToken = $tokens[$prevIndex];
         }
 
-        $prevKinds = [T_FUNCTION, CT::T_RETURN_REF, CT::T_USE_LAMBDA];
-
-        if (\PHP_VERSION_ID >= 70400) {
-            $prevKinds[] = T_FN;
-        }
-
-        if ($prevToken->isGivenKind($prevKinds)) {
+        if ($prevToken->isGivenKind([T_FUNCTION, CT::T_RETURN_REF, CT::T_USE_LAMBDA, T_FN])) {
             $tokens[$index] = new Token([CT::T_TYPE_COLON, ':']);
         }
     }
@@ -83,7 +88,7 @@ final class TypeColonTransformer extends AbstractTransformer
     /**
      * {@inheritdoc}
      */
-    protected function getDeprecatedCustomTokens()
+    public function getCustomTokens(): array
     {
         return [CT::T_TYPE_COLON];
     }

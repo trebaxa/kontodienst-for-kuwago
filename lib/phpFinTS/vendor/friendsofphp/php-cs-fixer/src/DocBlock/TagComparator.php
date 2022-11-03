@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of PHP CS Fixer.
  *
@@ -16,18 +18,17 @@ namespace PhpCsFixer\DocBlock;
  * This class is responsible for comparing tags to see if they should be kept
  * together, or kept apart.
  *
- * @author Graham Campbell <graham@alt-three.com>
- *
- * @final
+ * @author Graham Campbell <hello@gjcampbell.co.uk>
+ * @author Jakub Kwaśniewski <jakub@zero-85.pl>
  */
-class TagComparator
+final class TagComparator
 {
     /**
      * Groups of tags that should be allowed to immediately follow each other.
      *
-     * @var array
+     * @internal
      */
-    private static $groups = [
+    public const DEFAULT_GROUPS = [
         ['deprecated', 'link', 'see', 'since'],
         ['author', 'copyright', 'license'],
         ['category', 'package', 'subpackage'],
@@ -37,9 +38,9 @@ class TagComparator
     /**
      * Should the given tags be kept together, or kept apart?
      *
-     * @return bool
+     * @param string[][] $groups
      */
-    public static function shouldBeTogether(Tag $first, Tag $second)
+    public static function shouldBeTogether(Tag $first, Tag $second, array $groups = self::DEFAULT_GROUPS): bool
     {
         $firstName = $first->getName();
         $secondName = $second->getName();
@@ -48,7 +49,7 @@ class TagComparator
             return true;
         }
 
-        foreach (self::$groups as $group) {
+        foreach ($groups as $group) {
             if (\in_array($firstName, $group, true) && \in_array($secondName, $group, true)) {
                 return true;
             }

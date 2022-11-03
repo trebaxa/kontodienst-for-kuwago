@@ -217,7 +217,7 @@ class kd_api extends kd_rest {
             $accounts = $this->load_accounts($fints);
             $konto = $this->get_konto($accounts);
             $all = array();
-            $date_back = date("Y-m-d", strtotime("-13 day"));
+            $date_back = date("Y-m-d", strtotime("-60 day"));
             $to = new \DateTime();
             $from = new \DateTime($date_back);
             #$soa = $fints->getStatementOfAccount($konto, $from, $to); #self::echoarr($soa);

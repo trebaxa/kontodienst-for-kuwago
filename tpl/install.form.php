@@ -2,7 +2,7 @@
 
 $json = kd_install::curl_get_data('https://erp.kuwago.de/rest/rest.php?cmdo=get_fints_server');
 $arr = json_decode($json,true);
-    #kd_install::echoarr($arr);        
+            
 ?>
 <h1>Kontodienst.de <small>auf Ihrem eigenem Server</small></h1>
 <div class="lead">
@@ -26,13 +26,13 @@ $arr = json_decode($json,true);
             <div class="form-group">
                 <label>Server URL (FinTS) der Bank</label>
                 <!-- <input type="text" class="form-control" name="FORM[server]" required="" value="<?=$_SESSION['set']['server']?>"/> -->
-                <select name="FORM[server]" id="js-server" class="form-control">
+                <select name="FORM[server]" class="form-control">
                 <?PHP
                 if (is_array($arr)){
                    # kd_install::<ins>echoarr</ins>($arr);
                     foreach ($arr['servers'] as $row) {
                         $sel = ($_SESSION['set']['server']==$row['fin_pintanurl']) ? 'selected' : '' ;
-                        echo '<option data-id="'.$row['id'].'" '.$sel.' value="'.$row['fin_pintanurl'].'">'.$row['fin_name'].' ['.$row['fin_location'].']</option>';
+                        echo '<option '.$sel.' value="'.$row['fin_pintanurl'].'">'.$row['fin_name'].' ['.$row['fin_location'].']</option>';
                     }
                 }
                 ?>
@@ -58,7 +58,7 @@ $arr = json_decode($json,true);
         </div>
         <div class="alert alert-info">
 <p>Die Formular-Daten werden verschlüsselt und sicher gespeichert.</p>
-<p>Weitere Infos unter: <a href="https://github.com/trebaxa/kontodienst-for-kuwago" target="_blank">https://github.com/trebaxa/kontodienst-for-kuwago</a></p>
+<p>Weitere Infos unter: <a href="https://github.com/trebaxa/kontodienst" target="_blank">https://github.com/trebaxa/kontodienst</a></p>
 <p>Kompatibles ERP System: <a target="_blank" href="https://www.kuwago.de">https://www.kuwago.de</a></p> 
         </div>
     </div>
@@ -82,7 +82,6 @@ $arr = json_decode($json,true);
                 <td>'.$row['fin_name'].'</td>            
                 <td>'.$row['fin_location'].'</td>
                 <td>'.$row['fin_pintanurl'].'</td>
-                <td><button type="button" onclick="set_server('.$row['id'].',\''.$row['fin_pintanurl'].'\')" class="btn btn-secondary">+</button></td>
              </tr>';   
             }}
         ?>
@@ -90,16 +89,3 @@ $arr = json_decode($json,true);
     </table>
     </div>
 </div>
-
-<script>
-    function set_server(id,server) {
-        $("#js-server").find("option").removeAttr("selected");
-        $("#js-server").find("option").prop('selected',false);
-        $('#js-server').find("[data-id='"+id+"'").attr('selected','selected');
-        $('#js-server').find("[data-id='"+id+"'").prop('selected',true);
-        $('#js-server').find("[data-id='"+id+"'").val(server);        
-         $('html,body').animate({
-            scrollTop: $("#js-server").offset().top -50
-        }, 500);
-    }
-</script>

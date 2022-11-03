@@ -114,7 +114,7 @@ class FinTs
     {
         $this->options = $options;
         $this->credentials = $credentials;
-        $this->logger = new NullLogger();
+        $this->setLogger(new NullLogger());
     }
 
     /**
@@ -198,7 +198,6 @@ class FinTs
         }
     }
 
-    /** @param array $data */
     private function loadPersistedInstanceVersion2(array $data)
     {
         list( // This should match persist().
@@ -210,7 +209,7 @@ class FinTs
             $this->kundensystemId,
             $this->dialogId,
             $this->messageNumber
-            ) = $data;
+        ) = $data;
     }
 
     /** @noinspection PhpUnused */
@@ -566,7 +565,7 @@ class FinTs
             $this->execute($getTanMedia);
             $this->endDialog();
             return $getTanMedia->getTanMedia();
-        } catch (UnexpectedResponseException | CurlException | ServerException $e) {
+        } catch (UnexpectedResponseException|CurlException|ServerException $e) {
             throw $e;
         } finally {
             $this->selectedTanMode = $oldTanMode;

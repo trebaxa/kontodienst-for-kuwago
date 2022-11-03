@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of PHP CS Fixer.
  *
@@ -15,6 +17,7 @@ namespace PhpCsFixer\Fixer\Casing;
 use PhpCsFixer\AbstractFixer;
 use PhpCsFixer\FixerDefinition\CodeSample;
 use PhpCsFixer\FixerDefinition\FixerDefinition;
+use PhpCsFixer\FixerDefinition\FixerDefinitionInterface;
 use PhpCsFixer\FixerDefinition\VersionSpecification;
 use PhpCsFixer\FixerDefinition\VersionSpecificCodeSample;
 use PhpCsFixer\Tokenizer\Analyzer\Analysis\TypeAnalysis;
@@ -22,9 +25,6 @@ use PhpCsFixer\Tokenizer\Analyzer\FunctionsAnalyzer;
 use PhpCsFixer\Tokenizer\Token;
 use PhpCsFixer\Tokenizer\Tokens;
 
-/**
- * @author SpacePossum
- */
 final class NativeFunctionTypeDeclarationCasingFixer extends AbstractFixer
 {
     /**
@@ -42,15 +42,18 @@ final class NativeFunctionTypeDeclarationCasingFixer extends AbstractFixer
      * object   PHP 7.2
      * static   PHP 8.0 (return type only)
      * mixed    PHP 8.0
+     * false    PHP 8.0 (union return type only)
+     * null     PHP 8.0 (union return type only)
+     * never    PHP 8.1 (return type only)
+     * true     PHP 8.2 (standalone type: https://wiki.php.net/rfc/true-type)
+     * false    PHP 8.2 (standalone type: https://wiki.php.net/rfc/null-false-standalone-types)
+     * null     PHP 8.2 (standalone type: https://wiki.php.net/rfc/null-false-standalone-types)
      *
      * @var array<string, true>
      */
-    private $hints;
+    private array $hints;
 
-    /**
-     * @var FunctionsAnalyzer
-     */
-    private $functionsAnalyzer;
+    private FunctionsAnalyzer $functionsAnalyzer;
 
     public function __construct()
     {
@@ -58,39 +61,30 @@ final class NativeFunctionTypeDeclarationCasingFixer extends AbstractFixer
 
         $this->hints = [
             'array' => true,
+            'bool' => true,
             'callable' => true,
+            'float' => true,
+            'int' => true,
+            'iterable' => true,
+            'object' => true,
             'self' => true,
+            'string' => true,
+            'void' => true,
         ];
 
-        if (\PHP_VERSION_ID >= 70000) {
-            $this->hints = array_merge(
-                $this->hints,
-                [
-                    'bool' => true,
-                    'float' => true,
-                    'int' => true,
-                    'string' => true,
-                ]
-            );
-        }
-
-        if (\PHP_VERSION_ID >= 70100) {
-            $this->hints = array_merge(
-                $this->hints,
-                [
-                    'iterable' => true,
-                    'void' => true,
-                ]
-            );
-        }
-
-        if (\PHP_VERSION_ID >= 70200) {
-            $this->hints = array_merge($this->hints, ['object' => true]);
-        }
-
         if (\PHP_VERSION_ID >= 80000) {
-            $this->hints = array_merge($this->hints, ['static' => true]);
-            $this->hints = array_merge($this->hints, ['mixed' => true]);
+            $this->hints['false'] = true;
+            $this->hints['mixed'] = true;
+            $this->hints['null'] = true;
+            $this->hints['static'] = true;
+        }
+
+        if (\PHP_VERSION_ID >= 80100) {
+            $this->hints['never'] = true;
+        }
+
+        if (\PHP_VERSION_ID >= 80200) {
+            $this->hints['true'] = true;
         }
 
         $this->functionsAnalyzer = new FunctionsAnalyzer();
@@ -99,19 +93,17 @@ final class NativeFunctionTypeDeclarationCasingFixer extends AbstractFixer
     /**
      * {@inheritdoc}
      */
-    public function getDefinition()
+    public function getDefinition(): FixerDefinitionInterface
     {
         return new FixerDefinition(
             'Native type hints for functions should use the correct case.',
             [
                 new CodeSample("<?php\nclass Bar {\n    public function Foo(CALLABLE \$bar)\n    {\n        return 1;\n    }\n}\n"),
-                new VersionSpecificCodeSample(
-                    "<?php\nfunction Foo(INT \$a): Bool\n{\n    return true;\n}\n",
-                    new VersionSpecification(70000)
+                new CodeSample(
+                    "<?php\nfunction Foo(INT \$a): Bool\n{\n    return true;\n}\n"
                 ),
-                new VersionSpecificCodeSample(
-                    "<?php\nfunction Foo(Iterable \$a): VOID\n{\n    echo 'Hello world';\n}\n",
-                    new VersionSpecification(70100)
+                new CodeSample(
+                    "<?php\nfunction Foo(Iterable \$a): VOID\n{\n    echo 'Hello world';\n}\n"
                 ),
                 new VersionSpecificCodeSample(
                     "<?php\nfunction Foo(Object \$a)\n{\n    return 'hi!';\n}\n",
@@ -124,7 +116,7 @@ final class NativeFunctionTypeDeclarationCasingFixer extends AbstractFixer
     /**
      * {@inheritdoc}
      */
-    public function isCandidate(Tokens $tokens)
+    public function isCandidate(Tokens $tokens): bool
     {
         return $tokens->isAllTokenKindsFound([T_FUNCTION, T_STRING]);
     }
@@ -132,59 +124,46 @@ final class NativeFunctionTypeDeclarationCasingFixer extends AbstractFixer
     /**
      * {@inheritdoc}
      */
-    protected function applyFix(\SplFileInfo $file, Tokens $tokens)
+    protected function applyFix(\SplFileInfo $file, Tokens $tokens): void
     {
         for ($index = $tokens->count() - 1; $index >= 0; --$index) {
             if ($tokens[$index]->isGivenKind(T_FUNCTION)) {
-                if (\PHP_VERSION_ID >= 70000) {
-                    $this->fixFunctionReturnType($tokens, $index);
-                }
-
+                $this->fixFunctionReturnType($tokens, $index);
                 $this->fixFunctionArgumentTypes($tokens, $index);
             }
         }
     }
 
-    /**
-     * @param int $index
-     */
-    private function fixFunctionArgumentTypes(Tokens $tokens, $index)
+    private function fixFunctionArgumentTypes(Tokens $tokens, int $index): void
     {
         foreach ($this->functionsAnalyzer->getFunctionArguments($tokens, $index) as $argument) {
             $this->fixArgumentType($tokens, $argument->getTypeAnalysis());
         }
     }
 
-    /**
-     * @param int $index
-     */
-    private function fixFunctionReturnType(Tokens $tokens, $index)
+    private function fixFunctionReturnType(Tokens $tokens, int $index): void
     {
         $this->fixArgumentType($tokens, $this->functionsAnalyzer->getFunctionReturnType($tokens, $index));
     }
 
-    private function fixArgumentType(Tokens $tokens, TypeAnalysis $type = null)
+    private function fixArgumentType(Tokens $tokens, ?TypeAnalysis $type = null): void
     {
         if (null === $type) {
             return;
         }
 
-        $argumentStartIndex = $type->getStartIndex();
-        $argumentExpectedEndIndex = $type->isNullable()
-            ? $tokens->getNextMeaningfulToken($argumentStartIndex)
-            : $argumentStartIndex
-        ;
+        for ($index = $type->getStartIndex(); $index <= $type->getEndIndex(); ++$index) {
+            if ($tokens[$tokens->getNextMeaningfulToken($index)]->isGivenKind(T_NS_SEPARATOR)) {
+                continue;
+            }
 
-        if ($argumentExpectedEndIndex !== $type->getEndIndex()) {
-            return; // the type to fix is always unqualified and so is always composed of one token and possible a nullable '?' one
+            $lowerCasedName = strtolower($tokens[$index]->getContent());
+
+            if (!isset($this->hints[$lowerCasedName])) {
+                continue;
+            }
+
+            $tokens[$index] = new Token([$tokens[$index]->getId(), $lowerCasedName]);
         }
-
-        $lowerCasedName = strtolower($type->getName());
-
-        if (!isset($this->hints[$lowerCasedName])) {
-            return; // check of type is of interest based on name (slower check than previous index based)
-        }
-
-        $tokens[$argumentExpectedEndIndex] = new Token([$tokens[$argumentExpectedEndIndex]->getId(), $lowerCasedName]);
     }
 }

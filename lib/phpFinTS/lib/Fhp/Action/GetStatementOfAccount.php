@@ -40,6 +40,8 @@ class GetStatementOfAccount extends PaginateableAction
     private $to;
     /** @var bool */
     private $allAccounts;
+    /** @var bool */
+    private $includeUnbooked;
 
     // Information from the BPD needed to interpret the response.
     /** @var string */
@@ -64,7 +66,7 @@ class GetStatementOfAccount extends PaginateableAction
      *     pass one of the accounts into $account, though.
      * @return GetStatementOfAccount A new action instance.
      */
-    public static function create(SEPAAccount $account, ?\DateTime $from = null, ?\DateTime $to = null, bool $allAccounts = false): GetStatementOfAccount
+    public static function create(SEPAAccount $account, ?\DateTime $from = null, ?\DateTime $to = null, bool $allAccounts = false, bool $includeUnbooked = false): GetStatementOfAccount
     {
         if ($from !== null && $to !== null && $from > $to) {
             throw new \InvalidArgumentException('From-date must be before to-date');
@@ -75,26 +77,49 @@ class GetStatementOfAccount extends PaginateableAction
         $result->from = $from;
         $result->to = $to;
         $result->allAccounts = $allAccounts;
+        $result->includeUnbooked = $includeUnbooked;
         return $result;
     }
 
+    /**
+     * @deprecated Beginning from PHP7.4 __unserialize is used for new generated strings, then this method is only used for previously generated strings - remove after May 2023
+     */
     public function serialize(): string
     {
-        return serialize([
-            parent::serialize(),
-            $this->account, $this->from, $this->to, $this->allAccounts,
-            $this->bankName,
-        ]);
+        return serialize($this->__serialize());
     }
 
+    public function __serialize(): array
+    {
+        return [
+            parent::__serialize(),
+            $this->account, $this->from, $this->to, $this->allAccounts,
+            $this->bankName,
+        ];
+    }
+
+    /**
+     * @deprecated Beginning from PHP7.4 __unserialize is used for new generated strings, then this method is only used for previously generated strings - remove after May 2023
+     *
+     * @param string $serialized
+     * @return void
+     */
     public function unserialize($serialized)
+    {
+        self::__unserialize(unserialize($serialized));
+    }
+
+    public function __unserialize(array $serialized): void
     {
         list(
             $parentSerialized,
             $this->account, $this->from, $this->to, $this->allAccounts,
             $this->bankName
-            ) = unserialize($serialized);
-        parent::unserialize($parentSerialized);
+        ) = $serialized;
+
+        is_array($parentSerialized) ?
+            parent::__unserialize($parentSerialized) :
+            parent::unserialize($parentSerialized);
     }
 
     /**
@@ -165,6 +190,9 @@ class GetStatementOfAccount extends PaginateableAction
         /** @var HIKAZ $hikaz */
         foreach ($responseHikaz as $hikaz) {
             $this->rawMT940 .= $hikaz->getGebuchteUmsaetze()->getData();
+            if ($this->includeUnbooked and $hikaz->getNichtGebuchteUmsaetze() !== null) {
+                $this->rawMT940 .= $hikaz->getNichtGebuchteUmsaetze()->getData();
+            }
         }
 
         // Note: Pagination boundaries may cut in the middle of the MT940 data, so it is not possible to parse a partial

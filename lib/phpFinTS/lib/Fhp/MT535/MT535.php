@@ -47,29 +47,38 @@ class MT535
                 $holding->setName($r[1]);
             }
 
+            // handle acquisition price
+            // e.g ':70E::HOLD//1STK23,968293+EUR'
+            if (preg_match('/:70E::HOLD\/\/\d*STK2(\d*),(\d*)\+([A-Z]{3})/sm', $block, $iwn)) {
+                $holding->setAcquisitionPrice((float) $iwn[1].'.'.$iwn[2]);
+                if ($holding->getCurrency() === null) {
+                    $holding->setCurrency($iwn[3]);
+                }
+            }
+
             // handle Price
             // :90B::MRKT//ACTU/EUR76,06
-            //A1G1UF
+            // A1G1UF
             if (preg_match('/:90(.)::(.*?):/sm', $block, $iwn)) {
                 if ($iwn[1] == 'B') {
-                    //Currency
+                    // Currency
                     preg_match('/^.{11}(.{3})/sm', $iwn[2], $r);
                     $holding->setCurrency($r[1]);
-                    //Price
+                    // Price
                     preg_match('/^.{14}(.*)/sm', $iwn[2], $r);
                     $holding->setPrice(floatval(str_replace(',', '.', $r[1])));
                 } elseif ($iwn[1] == 'A') {
                     $holding->setCurrency('%');
-                    //Price
+                    // Price
                     preg_match('/^.{11}(.*)/sm', $iwn[2], $r);
                     $holding->setPrice(floatval(str_replace(',', '.', $r[1])) / 100);
                 }
             }
 
-            //handle Amount
-            //:93B::AGGR//UNIT/2666,000
+            // handle Amount
+            // :93B::AGGR//UNIT/2666,000
             if (preg_match('/:93B::(.*?):/sm', $block, $iwn)) {
-                //Amount
+                // Amount
                 preg_match('/^.{11}(.*)/sm', $iwn[1], $r);
                 $holding->setAmount(floatval(str_replace(',', '.', $r[1])));
             }
@@ -82,9 +91,9 @@ class MT535
                 }
             }
 
-            //Bereitstellungsdatum
-            //:98A::PRIC//20210304
-            if (preg_match('/:98[AC]::(.*?):/sm', $block, $iwn)) {
+            // Bereitstellungsdatum
+            // :98A::PRIC//20210304
+            if (preg_match('/:98([AC])::(.*?):/sm', $block, $iwn)) {
                 preg_match('/^.{6}(.{8})/sm', $iwn[2], $r);
                 $holding->setDate($this->getDate($r[1]));
                 // TODO The time code looks wrong.

@@ -67,21 +67,43 @@ class GetStatementOfAccountXML extends PaginateableAction
         return $result;
     }
 
+    /**
+     * @deprecated Beginning from PHP7.4 __unserialize is used for new generated strings, then this method is only used for previously generated strings - remove after May 2023
+     */
     public function serialize(): string
     {
-        return serialize([
-            parent::serialize(),
-            $this->account, $this->camtURN, $this->from, $this->to, $this->allAccounts,
-        ]);
+        return serialize($this->__serialize());
     }
 
+    public function __serialize(): array
+    {
+        return [
+            parent::__serialize(),
+            $this->account, $this->camtURN, $this->from, $this->to, $this->allAccounts,
+        ];
+    }
+
+    /**
+     * @deprecated Beginning from PHP7.4 __unserialize is used for new generated strings, then this method is only used for previously generated strings - remove after May 2023
+     *
+     * @param string $serialized
+     * @return void
+     */
     public function unserialize($serialized)
+    {
+        self::__unserialize(unserialize($serialized));
+    }
+
+    public function __unserialize(array $serialized): void
     {
         list(
             $parentSerialized,
             $this->account, $this->camtURN, $this->from, $this->to, $this->allAccounts
-            ) = unserialize($serialized);
-        parent::unserialize($parentSerialized);
+        ) = $serialized;
+
+        is_array($parentSerialized) ?
+            parent::__unserialize($parentSerialized) :
+            parent::unserialize($parentSerialized);
     }
 
     /**
@@ -147,6 +169,8 @@ class GetStatementOfAccountXML extends PaginateableAction
             throw new UnsupportedException('More than 1 HICAZ response segment is not supported at the moment!');
         }
         // It seems that paginated responses, always contain a whole XML Document
-        $this->xml[] = $responseHicaz[0]->getGebuchteUmsaetze()->getData();
+        foreach ($responseHicaz[0]->getGebuchteUmsaetze() as $xml_string) {
+            $this->xml[] = $xml_string;
+        }
     }
 }

@@ -6,7 +6,7 @@ use Fhp\MT940\MT940;
 
 class SpardaMT940 extends MT940
 {
-    const DIALECT_ID = 'https://fints.bankingonline.de/fints/FinTs30PinTanHttpGate';
+    public const DIALECT_ID = 'https://fints.bankingonline.de/fints/FinTs30PinTanHttpGate';
 
     /** {@inheritdoc} */
     public function extractStructuredDataFromRemittanceLines($descriptionLines, string &$gvc, array &$rawLines, array $transaction): array
@@ -65,8 +65,8 @@ class SpardaMT940 extends MT940
                 case 'SEPA-BASISLASTSCHRIFT':
                     $gvc = '105';
                     break;
-                // case 'SEPA-RÜCKLASTSCHRIFT':
-                // Hängt vom Betrag ab ?
+                    // case 'SEPA-RÜCKLASTSCHRIFT':
+                    // Hängt vom Betrag ab ?
             }
         }
 

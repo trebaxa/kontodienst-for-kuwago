@@ -28,8 +28,8 @@ in a dedicated `composer.json` file in your project, for example in the
 `tools/php-cs-fixer` directory:
 
 ```console
-$ mkdir --parents tools/php-cs-fixer
-$ composer require --working-dir=tools/php-cs-fixer friendsofphp/php-cs-fixer
+mkdir --parents tools/php-cs-fixer
+composer require --working-dir=tools/php-cs-fixer friendsofphp/php-cs-fixer
 ```
 
 For more details and other installation methods, see
@@ -41,7 +41,7 @@ Assuming you installed PHP CS Fixer as instructed above, you can run the
 following command to fix the files PHP files in the `src` directory:
 
 ```console
-$ tools/php-cs-fixer/vendor/bin/php-cs-fixer fix src
+tools/php-cs-fixer/vendor/bin/php-cs-fixer fix src
 ```
 
 See [usage](./doc/usage.rst), list of [built-in rules](./doc/rules/index.rst), list of [rule sets](./doc/ruleSets/index.rst)
@@ -55,15 +55,15 @@ If you need to apply code styles that are not supported by the tool, you can
 Dedicated plugins exist for:
 
 * [Atom](https://github.com/Glavin001/atom-beautify)
-* [NetBeans](http://plugins.netbeans.org/plugin/49042/php-cs-fixer)
-* [PhpStorm](https://medium.com/@valeryan/how-to-configure-phpstorm-to-use-php-cs-fixer-1844991e521f)
+* [NetBeans](https://plugins.netbeans.apache.org/catalogue/?id=36)
+* [PhpStorm](https://www.jetbrains.com/help/phpstorm/using-php-cs-fixer.html)
 * [Sublime Text](https://github.com/benmatselby/sublime-phpcs)
 * [Vim](https://github.com/stephpy/vim-php-cs-fixer)
 * [VS Code](https://github.com/junstyle/vscode-php-cs-fixer)
 
 ## Community
 
-The PHP CS Fixer is maintained on GitHub at https://github.com/FriendsOfPHP/PHP-CS-Fixer.
+The PHP CS Fixer is maintained on GitHub at https://github.com/PHP-CS-Fixer/PHP-CS-Fixer.
 Bug reports and ideas about new features are welcome there.
 
 You can reach us at https://gitter.im/PHP-CS-Fixer/Lobby about the project,
