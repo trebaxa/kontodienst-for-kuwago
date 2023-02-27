@@ -4,8 +4,7 @@
  * path where to store account access data like username and pin.
  * It will be stored encrypted. Folder should one level lower than root of domain 
  */
-
-
+  
 # load needed classes
 require ('lib/phpFinTS/vendor/autoload.php');
 require ("classes/kd_master.class.php");

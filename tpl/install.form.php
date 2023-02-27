@@ -2,7 +2,7 @@
 
 $json = kd_install::curl_get_data('https://erp.kuwago.de/rest/rest.php?cmdo=get_fints_server');
 $arr = json_decode($json,true);
-            
+             
 ?>
 <h1>Kontodienst.de <small>auf Ihrem eigenem Server</small></h1>
 <div class="lead">
@@ -29,7 +29,7 @@ $arr = json_decode($json,true);
                 <select name="FORM[server]" class="form-control">
                 <?PHP
                 if (is_array($arr)){
-                   # kd_install::<ins>echoarr</ins>($arr);
+                    #kd_install::echoarr($arr);
                     foreach ($arr['servers'] as $row) {
                         $sel = ($_SESSION['set']['server']==$row['fin_pintanurl']) ? 'selected' : '' ;
                         echo '<option '.$sel.' value="'.$row['fin_pintanurl'].'">'.$row['fin_name'].' ['.$row['fin_location'].']</option>';
