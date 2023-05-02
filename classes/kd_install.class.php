@@ -141,9 +141,9 @@ class kd_install extends kd_master {
     protected static function gen_sid($length = 8) {
         $key = "";
         $pattern = "1234567890abcdefghijklmnopqrstuvwxyz!#.ABCDEFGHIJKLMNOPQRSTUVWXYZ|";
-        srand((double)microtime() * 1000000);
-        for ($i = 0; $i < $length; $i++) {            
-            $key .= $pattern[rand(0, 35)];
+        for ($i = 0; $i < $length; $i++) {
+            srand((double)microtime() * 1000000);
+            $key .= $pattern{rand(0, 35)};
         }
         return $key;
     }
@@ -237,7 +237,7 @@ class kd_install extends kd_master {
         $ch = curl_init();
         $timeout = 10;
         curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.7.5) Gecko/20041107 Firefox/1.0');
+        # curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.7.5) Gecko/20041107 Firefox/1.0');
 
         if (is_array($vars) && count($vars) > 0) {
             curl_setopt($ch, CURLOPT_POST, 1);
